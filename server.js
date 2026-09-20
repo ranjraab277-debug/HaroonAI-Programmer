@@ -174,7 +174,7 @@ async function makePlan(text, history, snapshot) {
         operations: { type: 'array', items: { type: 'object', additionalProperties: false, properties: {
           op: { type: 'string', enum: ['create_instance','set_property','set_source','destroy','move'] },
           path: { type: 'string' }, className: { type: 'string' }, property: { type: 'string' },
-          value: {}, source: { type: 'string' }, to: { type: 'string' }
+          value: { type: ['string', 'number', 'boolean', 'object', 'array', 'null'] }, source: { type: 'string' }, to: { type: 'string' }
         }, required: ['op','path'] } }
       }, required: ['assistant_message','operations']
     }}}
