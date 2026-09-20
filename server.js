@@ -159,26 +159,105 @@ const SYSTEM = `You are Haroon AI, an expert Roblox Luau coding agent. You under
 
 async function makePlan(text, history, snapshot) {
   if (!openai) throw new Error('OPENAI_API_KEY is missing');
+
   const context = [
     { role: 'system', content: SYSTEM },
-    { role: 'system', content: `Current project snapshot (may be empty): ${JSON.stringify(snapshot || {})}` },
-    ...history.slice(-12).map(x => ({ role: x.role === 'assistant' ? 'assistant' : 'user', content: x.content })),
+    {
+      role: 'system',
+      content: `Current project snapshot (may be empty): ${JSON.stringify(snapshot || {})}`
+    },
+    ...history.slice(-12).map(x => ({
+      role: x.role === 'assistant' ? 'assistant' : 'user',
+      content: x.content
+    })),
     { role: 'user', content: text }
   ];
+
   const response = await openai.responses.create({
-    model: process.env.OPENAI_MODEL || 'gpt-5.6-luna', input: context,
-    text: { format: { type: 'json_schema', name: 'haroon_plan', strict: true, schema: {
-      type: 'object', additionalProperties: false,
-      properties: {
-        assistant_message: { type: 'string' },
-        operations: { type: 'array', items: { type: 'object', additionalProperties: false, properties: {
-          op: { type: 'string', enum: ['create_instance','set_property','set_source','destroy','move'] },
-          path: { type: 'string' }, className: { type: 'string' }, property: { type: 'string' },
-          value: { type: ['string', 'number', 'boolean', 'object', 'array', 'null'] }, source: { type: 'string' }, to: { type: 'string' }
-        }, required: ['op','path'] } }
-      }, required: ['assistant_message','operations']
-    }}}
+    model: process.env.OPENAI_MODEL || 'gpt-5.6-luna',
+    input: context,
+
+    text: {
+      format: {
+        type: 'json_schema',
+        name: 'haroon_plan',
+        strict: true,
+
+        schema: {
+          type: 'object',
+          additionalProperties: false,
+
+          properties: {
+            assistant_message: {
+              type: 'string'
+            },
+
+            operations: {
+              type: 'array',
+
+              items: {
+                type: 'object',
+                additionalProperties: false,
+
+                properties: {
+                  op: {
+                    type: 'string',
+                    enum: [
+                      'create_instance',
+                      'set_property',
+                      'set_source',
+                      'destroy',
+                      'move'
+                    ]
+                  },
+
+                  path: {
+                    type: 'string'
+                  },
+
+                  className: {
+                    type: 'string'
+                  },
+
+                  property: {
+                    type: 'string'
+                  },
+
+                  value: {
+                    type: 'string'
+                  },
+
+                  source: {
+                    type: 'string'
+                  },
+
+                  to: {
+                    type: 'string'
+                  }
+                },
+
+                required: [
+                  'op',
+                  'path',
+                  'className',
+                  'property',
+                  'value',
+                  'source',
+                  'to'
+                ]
+              }
+            }
+          },
+
+          required: [
+            'assistant_message',
+            'operations'
+          ]
+        }
+      }
+    }
   });
+
   return JSON.parse(response.output_text);
 }
 
